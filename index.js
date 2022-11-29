@@ -7,7 +7,7 @@ const app = express();
 const authRouter = require('./routers/authRouter');
 const commentsRouter = require('./routers/commentsRouter')
 
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT;
 
 Database();
 
