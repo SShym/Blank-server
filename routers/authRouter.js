@@ -108,7 +108,7 @@ Router.post('/register',  async (req, res) => {
         token: jwt.sign({}, 'token'),
       }).save();
       
-      const link = `http://localhost:3000/${tokenS.userId}/verify/${tokenS.token}`;
+      const link = `sanar.netlify.app/${tokenS.userId}/verify/${tokenS.token}`;
 
       await verification(email, link, firstName);
 
