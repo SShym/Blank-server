@@ -120,6 +120,7 @@ Router.post('/register',  async (req, res) => {
 });
 
 Router.get("/:id/verify/:token", async (req, res) => {
+  console.log('verification');
   try {
 		const user = await userSchema.findOne({ _id: req.params.id });
 
