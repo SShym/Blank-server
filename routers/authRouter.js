@@ -141,7 +141,6 @@ Router.get("/:id/verify/:token", async (req, res) => {
     console.log(error)
 		res.status(500).send({ message: "Internal Server Error" });
 	}
-  res.send('verification in process');
 });
 
 Router.post('/delete/:id', async (req, res) => {
