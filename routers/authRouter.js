@@ -1,6 +1,6 @@
 const express = require('express');
-const mongoose = require('mongoose');
 const Router = express();
+const mongoose = require('mongoose');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
 const userSchema = require('../models/userSchema');
@@ -73,7 +73,7 @@ Router.post('/resend-verification',  async (req, res) => {
           userId: req.body._id,
 					token: jwt.sign({}, 'token')
 				}).save();
-				const link = `${process.env.SITE_URL}/${req.body._id}/verify/${token.token}`;
+				const link = `https://sanar.netlify.app/${req.body._id}/verify/${token.token}`;
         await verification(req.body.email, link, req.body.name);
 
 			}
@@ -108,7 +108,7 @@ Router.post('/register',  async (req, res) => {
         token: jwt.sign({}, 'token'),
       }).save();
       
-      const link = `${process.env.SITE_URL}/${tokenS.userId}/verify/${tokenS.token}`;
+      const link = `https://sanar.netlify.app/${tokenS.userId}/verify/${tokenS.token}`;
 
       await verification(email, link, firstName);
 
