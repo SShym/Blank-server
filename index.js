@@ -15,6 +15,8 @@ app.use(cors());
 
 Database();
 
+app.get("/", async (req, res) => { res.send('APP IS RUNNING')} );
+
 app.use(express.json({limit: '25mb'}));
 app.use(express.urlencoded({limit: '25mb', extended: true}));
 app.use(bodyParser.urlencoded({ extended: true }));
