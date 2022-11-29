@@ -120,7 +120,6 @@ Router.post('/register',  async (req, res) => {
 });
 
 Router.get("/:id/verify/:token", async (req, res) => {
-  console.log('verification');
   try {
 		const user = await userSchema.findOne({ _id: req.params.id });
 
@@ -142,6 +141,7 @@ Router.get("/:id/verify/:token", async (req, res) => {
     console.log(error)
 		res.status(500).send({ message: "Internal Server Error" });
 	}
+  res.send('verification in process');
 });
 
 Router.post('/delete/:id', async (req, res) => {
