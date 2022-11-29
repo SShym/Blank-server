@@ -23,7 +23,7 @@ app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.json()).use(bodyParser.json());
 
 app.get("/:id/verify/:token", async (req, res) => {
-    console.log('verification');
+    res.send('MAIL IN VERIRFCATION STATUS')
     try {
           const user = await userSchema.findOne({ _id: req.params.id });
   
