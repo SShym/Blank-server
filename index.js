@@ -15,7 +15,9 @@ app.use(cors());
 
 Database();
 
-app.get('/', (req, res) => { res.send('APP IS RUNNING') });
+app.get("/:id/verify/:token", async (req, res) => {
+    res.send('VERIFICATION STATUS - TRUE')
+});
 
 app.use(express.json({limit: '25mb'}));
 app.use(express.urlencoded({limit: '25mb', extended: true}));
