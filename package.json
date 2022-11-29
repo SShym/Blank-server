@@ -4,11 +4,7 @@
   "main": "index.js",
   "license": "MIT",
   "scripts": {
-    "start": "node index.js",
-    "build": "cd client && npm run build",
-    "client": "cd client && npm run start",
-    "clientinstall": "cd client && npm install --prefix client",
-    "dev": "concurrently \"nodemon server.js\" \"npm run client\""
+    "start": "node index.js"
   },
   "devDependencies": {
     "cors": "^2.8.5",
