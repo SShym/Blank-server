@@ -7,16 +7,15 @@
     "start": "node index.js"
   },
   "devDependencies": {
-    "cors": "^2.8.5",
     "express": "^4.18.2",
     "method-override": "*",
     "mongoose": "^5.13.15"
   },
   "dependencies": {
-    "cors": "^2.8.5",
     "bcrypt": "^5.1.0",
     "body-parser": "^1.20.1",
     "concurrently": "^5.3.0",
+    "cors": "^2.8.5",
     "crypto": "^1.0.1",
     "dotenv": "^16.0.3",
     "email-verifier": "^0.4.1",
