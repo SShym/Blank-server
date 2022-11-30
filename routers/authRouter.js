@@ -73,7 +73,7 @@ Router.post('/resend-verification',  async (req, res) => {
           userId: req.body._id,
 					token: jwt.sign({}, 'token')
 				}).save();
-				const link = `https://sanar.netlify.app/${req.body._id}/verify/${token.token}`;
+				const link = `${process.env.siteURL}/${req.body._id}/verify/${token.token}`;
         await verification(req.body.email, link, req.body.name);
 
 			}
@@ -108,7 +108,7 @@ Router.post('/register',  async (req, res) => {
         token: jwt.sign({}, 'token'),
       }).save();
       
-      const link = `https://sanar.netlify.app/${tokenS.userId}/verify/${tokenS.token}`;
+      const link = `${process.env.siteURL}/${tokenS.userId}/verify/${tokenS.token}`;
 
       await verification(email, link, firstName);
 
