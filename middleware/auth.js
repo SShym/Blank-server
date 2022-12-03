@@ -25,7 +25,9 @@ const auth = async (req, res, next) => {
 
     next();
   } catch (error) {
-    console.log('You are not authorized');
+    res.status(500).send({ 
+      error: 'You have not verified your email'
+    });  
   }
 };
 

@@ -3,6 +3,7 @@ const Router = express();
 const mongoose = require('mongoose');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
+const Schema = require('../models/Schema');
 const userSchema = require('../models/userSchema');
 const tokenSchema = require('../models/tokenSchema');
 const crypto = require('crypto');
@@ -119,6 +120,48 @@ Router.post('/register',  async (req, res) => {
     }
 });
 
+Router.put('/change-settings',  async (req, res) => {
+    const { id, imageUrl, firstName, lastName, token } = req.body
+
+    try {
+      await userSchema.updateMany({ _id: id }, { 
+        name: `${firstName} ${lastName}`,
+        avatar: imageUrl
+      });
+
+      const product = await Schema.find({ creator: id});
+
+      new Promise((resolve) => {
+        for(let x in product){
+          resolve(
+            Schema.updateMany({ creator: product[x].creator }, {
+              avatar: imageUrl
+            })
+          );
+        }
+      });
+      
+      const user = await userSchema.findOne({ _id: id });
+
+      res.status(201).json({ message: 'Settings changed successfully', user, token })
+    } catch (error) {
+      console.log(error)
+      res.status(500).json({ message: "Something went wrong" });
+    }
+});
+
+Router.post('/account', async (req, res) => {
+  try {
+    const { id, token } = req.body
+    const user = await userSchema.findOne({ _id: id });
+  
+    res.status(201).json({ result: user, token })
+  } catch (error) {
+    console.log(error)
+    res.status(500).json({ message: "Something went wrong" });
+  }
+});
+
 Router.get("/:id/verify/:token", async (req, res) => {
   try {
 		const user = await userSchema.findOne({ _id: req.params.id });
@@ -147,11 +190,11 @@ Router.post('/delete/:id', async (req, res) => {
   try{
     const token = await tokenSchema.findOne({userId: req.body.id});
 		if (!token){
-      await userSchema.findOneAndDelete(req.body.id);
+      await userSchema.remove({_id: req.body.id});
       res.status(200).json({ message: 'Profile has been successfully deleted' })
     } else {
       await token.remove();
-      await userSchema.findOneAndDelete(req.body.id);
+      await userSchema.remove({_id: req.body.id});
       res.status(200).json({ message: 'Profile has been successfully deleted' })
     }
   } catch(err){
