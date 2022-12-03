@@ -55,10 +55,15 @@ Router.get('/photos/:id', async (req, res) => {
 });
 
 Router.get('/products', async (req, res) => {
-    Schema.find()
-        .exec()
-        .then(products => res.json(products))
-        .catch(err => res.status(500).json(err))
+    try {
+        Schema.find()
+            .exec()
+            .then(products => res.json(products))
+            .catch(err => res.status(500).json(err))
+    }
+    catch(error){
+        res.status(400).send({ get_error: 'Error while uploading try again later ...' })
+    }
 });
 
 Router.delete('/products/:id', auth, async (req, res) => {
