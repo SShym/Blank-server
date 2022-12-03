@@ -122,7 +122,7 @@ Router.post('/register',  async (req, res) => {
 
 Router.put('/change-settings',  async (req, res) => {
     const { id, imageUrl, firstName, lastName, token } = req.body
-
+    
     try {
       await userSchema.updateMany({ _id: id }, { 
         name: `${firstName} ${lastName}`,
@@ -135,7 +135,8 @@ Router.put('/change-settings',  async (req, res) => {
         for(let x in product){
           resolve(
             Schema.updateMany({ creator: product[x].creator }, {
-              avatar: imageUrl
+              avatar: imageUrl,
+              name: `${firstName} ${lastName}`,
             })
           );
         }
