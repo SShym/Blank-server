@@ -177,7 +177,7 @@ Router.get("/:id/verify/:token", async (req, res) => {
     
 		await userSchema.updateOne({ _id: req.params.id}, { verified: true });
 
-		await token.remove();
+		await token.deleteOne();
 
 		res.status(201).json({ user });
 	} catch (error) {
@@ -190,11 +190,11 @@ Router.post('/delete/:id', async (req, res) => {
   try{
     const token = await tokenSchema.findOne({userId: req.body.id});
 		if (!token){
-      await userSchema.remove({_id: req.body.id});
+      await userSchema.deleteOne({_id: req.body.id});
       res.status(200).json({ message: 'Profile has been successfully deleted' })
     } else {
-      await token.remove();
-      await userSchema.remove({_id: req.body.id});
+      await token.deleteOne();
+      await userSchema.deleteOne({_id: req.body.id});
       res.status(200).json({ message: 'Profile has been successfully deleted' })
     }
   } catch(err){
