@@ -120,47 +120,47 @@ Router.post('/register',  async (req, res) => {
     }
 });
 
-// Router.put('/change-settings',  async (req, res) => {
-//     const { id, imageUrl, firstName, lastName, token } = req.body
+Router.put('/change-settings',  async (req, res) => {
+    const { id, imageUrl, firstName, lastName, token } = req.body
 
-//     try {
-//       await userSchema.updateMany({ _id: id }, { 
-//         name: `${firstName} ${lastName}`,
-//         avatar: imageUrl
-//       });
+    try {
+      await userSchema.updateMany({ _id: id }, { 
+        name: `${firstName} ${lastName}`,
+        avatar: imageUrl
+      });
 
-//       const product = await Schema.find({ creator: id});
+      const product = await Schema.find({ creator: id});
 
-//       new Promise((resolve) => {
-//         for(let x in product){
-//           resolve(
-//             Schema.updateMany({ creator: product[x].creator }, {
-//               avatar: imageUrl
-//             })
-//           );
-//         }
-//       });
+      new Promise((resolve) => {
+        for(let x in product){
+          resolve(
+            Schema.updateMany({ creator: product[x].creator }, {
+              avatar: imageUrl
+            })
+          );
+        }
+      });
       
-//       const user = await userSchema.findOne({ _id: id });
+      const user = await userSchema.findOne({ _id: id });
 
-//       res.status(201).json({ message: 'Settings changed successfully', user, token })
-//     } catch (error) {
-//       console.log(error)
-//       res.status(500).json({ message: "Something went wrong" });
-//     }
-// });
+      res.status(201).json({ message: 'Settings changed successfully', user, token })
+    } catch (error) {
+      console.log(error)
+      res.status(500).json({ message: "Something went wrong" });
+    }
+});
 
-// Router.post('/account', async (req, res) => {
-//   try {
-//     const { id, token } = req.body
-//     const user = await userSchema.findOne({ _id: id });
+Router.post('/account', async (req, res) => {
+  try {
+    const { id, token } = req.body
+    const user = await userSchema.findOne({ _id: id });
   
-//     res.status(201).json({ result: user, token })
-//   } catch (error) {
-//     console.log(error)
-//     res.status(500).json({ message: "Something went wrong" });
-//   }
-// });
+    res.status(201).json({ result: user, token })
+  } catch (error) {
+    console.log(error)
+    res.status(500).json({ message: "Something went wrong" });
+  }
+});
 
 Router.get("/:id/verify/:token", async (req, res) => {
   try {
