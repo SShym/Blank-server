@@ -23,6 +23,6 @@ app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.json()).use(bodyParser.json());
 
 app.use(authRouter);
-app.use(commentsRouter)
+app.use(commentsRouter);
 
 app.listen(PORT, () => console.log(`The Server is Running Successfully on PORT ${PORT}`));
