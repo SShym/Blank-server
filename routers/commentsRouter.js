@@ -7,7 +7,7 @@ const auth = require('../middleware/auth');
 const upload = require('../middleware/imgUpload');
 const Schema = require('../models/Schema');
   
-Router.post('/products', upload, auth, async (req, res) => {
+Router.post('/comments', upload, auth, async (req, res) => {
     if(req.verified){
         try {
             const post = req.body
@@ -30,7 +30,7 @@ Router.post('/products', upload, auth, async (req, res) => {
     }
 });
 
-Router.put('/products/:id', auth, async (req, res) => {   
+Router.put('/comments/:id', auth, async (req, res) => {   
     if(req.verified){
         Schema.updateOne({_id: req.params.id}, req.body)
         .exec()
@@ -54,19 +54,22 @@ Router.get('/photos/:id', async (req, res) => {
     }
 });
 
-Router.get('/products', async (req, res) => {
+Router.get('/comments/:page', async (req, res) => {
+    const page = req.params.page;
     try {
-        Schema.find()
-            .exec()
-            .then(products => res.json(products))
-            .catch(err => res.status(500).json(err))
-    }
-    catch(error){
-        res.status(400).send({ get_error: 'Error while uploading try again later ...' })
+        const LIMIT = 6;
+        const startIndex = (Number(page) - 1) * LIMIT; // get the starting index of every page
+    
+        const total = await Schema.countDocuments({});
+        const comments = await Schema.find().sort({ _id: 0 }).limit(LIMIT).skip(startIndex);
+
+        res.json({ data: comments, currentPage: Number(page), numberOfPages: Math.ceil(total / LIMIT)});
+    } catch (error) {    
+        res.status(500).json({ data: null, currentPage: 1, numberOfPages: 1, message: error.message });
     }
 });
 
-Router.delete('/products/:id', auth, async (req, res) => {
+Router.delete('/comments/:id', auth, async (req, res) => {
     if(req.verified){
         Schema.deleteOne({_id: req.params.id})
         .exec()

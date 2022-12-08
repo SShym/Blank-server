@@ -15,4 +15,4 @@ const Schema = mongoose.Schema({
     }
 })
 
-module.exports = mongoose.model('products', Schema)
+module.exports = mongoose.model('comments', Schema)
