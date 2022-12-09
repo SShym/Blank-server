@@ -57,7 +57,7 @@ Router.get('/photos/:id', async (req, res) => {
 Router.get('/comments/:page', async (req, res) => {
     const page = req.params.page;
     try {
-        const LIMIT = 6;
+        const LIMIT = 5;
         const startIndex = (Number(page) - 1) * LIMIT; // get the starting index of every page
     
         const total = await Schema.countDocuments({});
