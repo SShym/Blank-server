@@ -8,7 +8,9 @@ const Schema = mongoose.Schema({
     changed: Boolean,
     timeChanged: String,
     timeCreate: String,
+    title: String,
     photo: String,
+    photoId: String,
     createdAt: {
         type: Date,
         default: new Date()

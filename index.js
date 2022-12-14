@@ -3,11 +3,8 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const Database = require('./DB/db'); 
 const app = express();
-const Schema = require('./models/Schema');
 const authRouter = require('./routers/authRouter');
 const commentsRouter = require('./routers/commentsRouter');
-const userSchema = require('./models/userSchema');
-const tokenSchema = require('./models/tokenSchema');
 
 const PORT = process.env.PORT;
 

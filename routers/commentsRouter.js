@@ -1,27 +1,50 @@
 const express = require('express');
 const Router = express();
-const mongoose = require('mongoose');
-const jwt = require('jsonwebtoken');
-const bcrypt = require('bcryptjs');
 const auth = require('../middleware/auth');
 const upload = require('../middleware/imgUpload');
 const Schema = require('../models/Schema');
-  
+const cloudinary = require("cloudinary");
+
+cloudinary.config({
+  cloud_name: "dotmufoiy",
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET
+});
+
 Router.post('/comments', upload, auth, async (req, res) => {
     if(req.verified){
         try {
-            const post = req.body
-            Schema.create({ 
-                ...post, 
-                creator: req.userId, 
-                createdAt: new Date().toISOString(),
-            }).then(createdProduct => {
-                res.json(createdProduct)
-            })
+            if(req.file){
+                cloudinary.v2.uploader.upload(req.file.path, (err, result) => {  
+                    if (err) req.json(err.message);  
+            
+                    const post = req.body
+                    Schema.create({ 
+                        ...post, 
+                        creator: req.userId, 
+                        photo: result.secure_url,
+                        photoId: result.public_id,
+                        createdAt: new Date().toISOString(),
+                    }).then(createdProduct => {
+                        res.json(createdProduct)
+                    })
+                });
+            } else {
+                const post = req.body
+
+                Schema.create({ 
+                    ...post, 
+                    creator: req.userId,
+                    createdAt: new Date().toISOString(),
+                }).then(createdProduct => {
+                    res.json(createdProduct)
+                })
+            }
         } catch(error){
             res.status(400).send({ 
                 error: 'Error while uploading file try again later'
             });
+            console.log(error)
         }
     } else {
         res.status(500).send({ 
@@ -30,12 +53,32 @@ Router.post('/comments', upload, auth, async (req, res) => {
     }
 });
 
-Router.put('/comments/:id', auth, async (req, res) => {   
+Router.put('/comments/:id', upload, auth, async (req, res) => {  
     if(req.verified){
-        Schema.updateOne({_id: req.params.id}, req.body)
-        .exec()
-        .then(product => res.json(product))
-        .catch(err => res.status(500).json(err))
+        try {
+            if(req.file){
+                cloudinary.v2.uploader.upload(req.file.path, (err, result) => {  
+                    if (err) req.json(err.message);  
+            
+                    const post = req.body
+                    Schema.updateOne({_id: req.params.id}, {
+                        ...post,
+                        photo: result.secure_url,
+                        photoId: result.public_id,
+                    }).exec().then(product => res.json(product))
+                    .catch(err => res.status(500).json(err))
+                });
+            } else {
+                Schema.updateOne({_id: req.params.id}, req.body)
+                    .exec()
+                    .then(product => res.json(product))
+            }
+        } catch(error){
+            res.status(400).send({
+                error: 'Error while uploading file try again later'
+            });
+            console.log(error); 
+        }
     } else {
         res.status(500).send({ 
             error: 'You have not verified your email'
