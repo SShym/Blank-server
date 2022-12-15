@@ -24,6 +24,10 @@ Router.post('/comments', upload, auth, async (req, res) => {
                         creator: req.userId, 
                         photo: result.secure_url,
                         photoId: result.public_id,
+                        photoSize: {
+                            width: req.body.photoSize.width,
+                            height: req.body.photoSize.height
+                        },
                         createdAt: new Date().toISOString(),
                     }).then(createdProduct => {
                         res.json(createdProduct)
@@ -53,10 +57,14 @@ Router.post('/comments', upload, auth, async (req, res) => {
     }
 });
 
-Router.put('/comments/:id', upload, auth, async (req, res) => {  
+Router.put('/comments/:id', upload, auth, async (req, res) => { 
+    const photo = await Schema.findById(req.params.id);
+
     if(req.verified){
         try {
             if(req.file){
+                photo.photoId && cloudinary.v2.uploader.destroy(photo.photoId);
+
                 cloudinary.v2.uploader.upload(req.file.path, (err, result) => {  
                     if (err) req.json(err.message);  
             
@@ -69,6 +77,8 @@ Router.put('/comments/:id', upload, auth, async (req, res) => {
                     .catch(err => res.status(500).json(err))
                 });
             } else {
+                photo.photoId && cloudinary.v2.uploader.destroy(photo.photoId);
+                
                 Schema.updateOne({_id: req.params.id}, req.body)
                     .exec()
                     .then(product => res.json(product))
@@ -77,7 +87,6 @@ Router.put('/comments/:id', upload, auth, async (req, res) => {
             res.status(400).send({
                 error: 'Error while uploading file try again later'
             });
-            console.log(error); 
         }
     } else {
         res.status(500).send({ 
@@ -113,10 +122,12 @@ Router.get('/comments/:page', async (req, res) => {
 });
 
 Router.delete('/comments/:id', auth, async (req, res) => {
+    const photo = await Schema.findById(req.params.id);
+
     if(req.verified){
         Schema.deleteOne({_id: req.params.id})
-        .exec()
-        .then(()=> {
+        .exec().then(() => {
+            photo.photoId && cloudinary.v2.uploader.destroy(photo.photoId)
             res.json({ success: true });
         })
         .catch(err => res.status(500).json(err))

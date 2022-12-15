@@ -11,6 +11,10 @@ const Schema = mongoose.Schema({
     title: String,
     photo: String,
     photoId: String,
+    photoSize: {
+        width: String,
+        height: String
+    },
     createdAt: {
         type: Date,
         default: new Date()
