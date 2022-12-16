@@ -120,6 +120,32 @@ Router.post('/register',  async (req, res) => {
     }
 });
 
+Router.post('/googleAuth',  async (req, res) => {
+    const { email, googleId, imageUrl, name } = req.body.result;
+
+    try {
+      const oldUser = await userSchema.findOne({ googleId });
+  
+      if (oldUser){
+        res.status(200).json({ result: oldUser, token: req.body.token });
+      } else {
+        const result = await userSchema.create({ 
+          googleId,
+          email:`google-mail=${email}`,
+          password: 'google', 
+          name,
+          verified: true,
+          avatar: imageUrl
+        });
+  
+        res.status(201).json({ oldUser });
+      }
+    } catch (error) {
+      res.status(500).json({ message: "Something went wrong" });
+      console.log(error);
+    }
+});
+
 Router.put('/change-settings',  async (req, res) => {
     const { id, imageUrl, firstName, lastName, token } = req.body
     
@@ -188,6 +214,7 @@ Router.get("/:id/verify/:token", async (req, res) => {
 });
 
 Router.post('/delete/:id', async (req, res) => {
+
   try{
     const token = await tokenSchema.findOne({userId: req.body.id});
 		if (!token){
