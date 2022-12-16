@@ -5,6 +5,7 @@ const Database = require('./DB/db');
 const app = express();
 const authRouter = require('./routers/authRouter');
 const commentsRouter = require('./routers/commentsRouter');
+const profileRouter = require('./routers/profileRouter');
 
 const PORT = process.env.PORT;
 
@@ -21,5 +22,6 @@ app.use(express.json()).use(bodyParser.json());
 
 app.use(authRouter);
 app.use(commentsRouter);
+app.use(profileRouter);
 
 app.listen(PORT, () => console.log(`The Server is Running Successfully on PORT ${PORT}`));
