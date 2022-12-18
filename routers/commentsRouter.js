@@ -54,7 +54,6 @@ Router.post('/comments', upload, auth, async (req, res) => {
 
 Router.put('/comments/:id', upload, auth, async (req, res) => { 
     const photo = await Schema.findById(req.params.id);
-    
     if(req.verified){
         try {
             if(req.file){
@@ -68,19 +67,18 @@ Router.put('/comments/:id', upload, auth, async (req, res) => {
                         photo: result.secure_url,
                         photoId: result.public_id,
                     }).then(() => {
-                        Schema.findById(req.params.id).then((result) => { 
-                            res.json(result);
-                        })
+                        Schema.findById(req.params.id).then((result) => res.json(result))
                     }).catch(err => res.status(500).json(err))
                 });
             } else {
-                photo.photoId && cloudinary.v2.uploader.destroy(photo.photoId);
-                
-                Schema.findById(req.params.id).then((result) => { 
-                    res.json(result);
+                req.body.photo?.length === 0 && cloudinary.v2.uploader.destroy(photo.photoId);
+
+                await Schema.updateOne({_id: req.params.id}, req.body).then(() => {
+                    Schema.findById(req.params.id).then((result) => res.json(result))
                 })
             }
         } catch(error){
+            console.log(error)
             res.status(400).send({
                 error: 'Error while uploading file try again later'
             });
