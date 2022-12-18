@@ -18,9 +18,8 @@ Router.post('/comments', upload, auth, async (req, res) => {
                 cloudinary.v2.uploader.upload(req.file.path, (err, result) => {  
                     if (err) req.json(err.message);  
             
-                    const post = req.body
                     Schema.create({ 
-                        ...post, 
+                        ...req.body, 
                         creator: req.userId, 
                         photo: result.secure_url,
                         photoId: result.public_id,
@@ -30,19 +29,15 @@ Router.post('/comments', upload, auth, async (req, res) => {
                         },
                         createdAt: new Date().toISOString(),
                     }).then(createdProduct => {
-                        res.json(createdProduct)
+                        res.json(createdProduct);
                     })
                 });
             } else {
-                const post = req.body
-
                 Schema.create({ 
-                    ...post, 
+                    ...req.body, 
                     creator: req.userId,
                     createdAt: new Date().toISOString(),
-                }).then(createdProduct => {
-                    res.json(createdProduct)
-                })
+                }).then(createdProduct => res.json(createdProduct))
             }
         } catch(error){
             res.status(400).send({ 
@@ -59,7 +54,7 @@ Router.post('/comments', upload, auth, async (req, res) => {
 
 Router.put('/comments/:id', upload, auth, async (req, res) => { 
     const photo = await Schema.findById(req.params.id);
-
+    
     if(req.verified){
         try {
             if(req.file){
@@ -68,20 +63,22 @@ Router.put('/comments/:id', upload, auth, async (req, res) => {
                 cloudinary.v2.uploader.upload(req.file.path, (err, result) => {  
                     if (err) req.json(err.message);  
             
-                    const post = req.body
                     Schema.updateOne({_id: req.params.id}, {
-                        ...post,
+                        ...req.body,
                         photo: result.secure_url,
                         photoId: result.public_id,
-                    }).exec().then(product => res.json(product))
-                    .catch(err => res.status(500).json(err))
+                    }).then(() => {
+                        Schema.findById(req.params.id).then((result) => { 
+                            res.json(result);
+                        })
+                    }).catch(err => res.status(500).json(err))
                 });
             } else {
                 photo.photoId && cloudinary.v2.uploader.destroy(photo.photoId);
                 
-                Schema.updateOne({_id: req.params.id}, req.body)
-                    .exec()
-                    .then(product => res.json(product))
+                Schema.findById(req.params.id).then((result) => { 
+                    res.json(result);
+                })
             }
         } catch(error){
             res.status(400).send({
@@ -92,17 +89,6 @@ Router.put('/comments/:id', upload, auth, async (req, res) => {
         res.status(500).send({ 
             error: 'You have not verified your email'
         });  
-    }
-});
-
-Router.get('/photos/:id', async (req, res) => {
-    try {
-        const result = await Schema.findById(req.params.id);
-        res.set('Content-Type', 'image/jpeg');
-        res.send(result.photo)
-    }
-    catch(error){
-        res.status(400).send({ get_error: 'Error while uploading try again later ...' })
     }
 });
 

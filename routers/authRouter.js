@@ -1,12 +1,9 @@
 const express = require('express');
 const Router = express();
-const mongoose = require('mongoose');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
-const Schema = require('../models/Schema');
 const userSchema = require('../models/userSchema');
 const tokenSchema = require('../models/tokenSchema');
-const crypto = require('crypto');
 
 require('dotenv').config();
 const nodemailer = require('nodemailer');
@@ -143,37 +140,6 @@ Router.post('/googleAuth',  async (req, res) => {
     } catch (error) {
       res.status(500).json({ message: "Something went wrong" });
       console.log(error);
-    }
-});
-
-Router.put('/change-settings',  async (req, res) => {
-    const { id, imageUrl, firstName, lastName, token } = req.body
-    
-    try {
-      await userSchema.updateMany({ _id: id }, { 
-        name: `${firstName} ${lastName}`,
-        avatar: imageUrl
-      });
-
-      const product = await Schema.find({ creator: id});
-
-      new Promise((resolve) => {
-        for(let x in product){
-          resolve(
-            Schema.updateMany({ creator: product[x].creator }, {
-              avatar: imageUrl,
-              name: `${firstName} ${lastName}`,
-            })
-          );
-        }
-      });
-      
-      const user = await userSchema.findOne({ _id: id });
-
-      res.status(201).json({ message: 'Settings changed successfully', user, token })
-    } catch (error) {
-      console.log(error)
-      res.status(500).json({ message: "Something went wrong" });
     }
 });
 
