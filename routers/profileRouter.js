@@ -27,6 +27,7 @@ Router.post('/profile', async (req, res) => {
 });
 
 Router.put('/change-settings', upload, async (req, res) => {
+    console.log(req.body)
     const { id, firstName, lastName, token } = req.body
 
     const user = await userSchema.findById(id);
@@ -64,6 +65,29 @@ Router.put('/change-settings', upload, async (req, res) => {
                 })
 
             })
+        } else if(req.body.photo?.length > 0) {
+            userSchema.updateOne({ _id: id }, { 
+                name: `${firstName} ${lastName}`,
+            }).then(() => {
+                Schema.find({ creator: id}).then(product => {
+                    new Promise((resolve) => {
+                        for(let x in product){
+                          resolve(
+                            Schema.updateMany({ creator: product[x].creator }, {
+                              name: `${firstName} ${lastName}`,
+                            })
+                          );
+                        }
+                    });
+                });
+            }).then(() => {
+                userSchema.findOne({ _id: id }).then((result) => {
+                    res.json({
+                        user: result, 
+                        token: token
+                    })
+                });
+            })
         } else {
             user.avatarId && cloudinary.v2.uploader.destroy(user.avatarId);
 
@@ -84,8 +108,7 @@ Router.put('/change-settings', upload, async (req, res) => {
                         }
                     });
                 });
-            })
-            .then(() => {
+            }).then(() => {
                 userSchema.findOne({ _id: id }).then((result) => {
                     res.json({
                         user: result, 
