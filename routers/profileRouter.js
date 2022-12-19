@@ -27,7 +27,6 @@ Router.post('/profile', async (req, res) => {
 });
 
 Router.put('/change-settings', upload, async (req, res) => {
-    console.log(req.body)
     const { id, firstName, lastName, token } = req.body
 
     const user = await userSchema.findById(id);
@@ -122,39 +121,5 @@ Router.put('/change-settings', upload, async (req, res) => {
       res.status(500).json({ message: "Something went wrong" });
     }
 });
-
-// Router.put('/change-settings', upload, async (req, res) => {
-//     const { id, firstName, lastName, token } = req.body
-//     const product = await Schema.find({ creator: id});
-//     const user = await userSchema.findOne({ _id: id });
-
-//     try {
-//         if(req.file){
-//             cloudinary.v2.uploader.upload(req.file.path, (err, result) => {  
-//                 if (err) req.json(err.message);  
-        
-//                 userSchema.updateMany({_id: id}, {
-//                     ...req.body,
-//                     name: `${firstName} ${lastName}`,
-//                     avatar: result.secure_url,
-//                     avatarId: result.public_id,
-//                 }).then(() => {
-//                     for(let x in product){
-//                         Schema.updateMany({ creator: product[x].creator }, {
-//                             avatar: result.public_id,
-//                             name: `${firstName} ${lastName}`,
-//                         })
-//                     }
-//                 }).then(() => {
-//                     res.status(201).json({ message: 'Settings changed successfully', user, token });
-//                 })
-//             });
-//         }
-//         console.log(user)
-//     } catch (error) {
-//       console.log(error)
-//       res.status(500).json({ message: "Something went wrong" });
-//     }
-// });
 
 module.exports = Router;
