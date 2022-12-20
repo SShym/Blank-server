@@ -18,7 +18,7 @@ const server = http.createServer(Router)
 
 const io = new Server(server, {
     cors: {
-        origin: "https://suspect.netlify.app",
+        origin: "https://sqmr.onrender.com/",
     },
 });
 
@@ -151,7 +151,7 @@ Router.delete('/comments/:id', auth, async (req, res) => {
     }
 });
 
-server.listen(5001, () => {
+server.listen(3001, () => {
     console.log("Websocket server is running!")
 })
 
