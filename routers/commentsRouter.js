@@ -148,7 +148,6 @@ Router.get('/comments/:page', async (req, res) => {
             numberOfPages: Math.ceil(total / LIMIT)
         });
 
-        updateMessageList();
     } catch (error) {    
         res.status(500).json({ data: null, currentPage: 1, numberOfPages: 1, message: error.message });
     }  
@@ -171,7 +170,7 @@ Router.delete('/comments/:id', auth, async (req, res) => {
     }
 });
 
-server.listen(3001, () => {
+server.listen(5001, () => {
     console.log("Websocket server is running!")
 })
 
