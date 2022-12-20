@@ -11,6 +11,16 @@ cloudinary.config({
   api_secret: process.env.CLOUDINARY_API_SECRET
 });
 
+const http = require('http');
+const { Server } = require('socket.io');
+
+const server = http.createServer(Router)
+
+const io = new Server(server, {
+    cors: {
+        origin: "https://suspect.netlify.app",
+    },
+});
 
 Router.post('/comments', upload, auth, async (req, res) => {
     if(req.verified){
@@ -91,25 +101,38 @@ Router.put('/comments/:id', upload, auth, async (req, res) => {
     }
 });
 
-Router.get('/comments/:page', async (req, res) => {
-    try {
-        const LIMIT = 5;
-        const startIndex = (Number(req.params.page) - 1) * LIMIT; // get the starting index of every page
+io.on('connect', (socket) => {
+    let messages = {};
     
-        const total = await Schema.countDocuments({});
-        const comments = await Schema.find().sort({ _id: 0 }).limit(LIMIT).skip(startIndex);
+    const updateMessageList = () => io.emit('comments', messages);
 
+    Router.get('/comments/:page', async (req, res) => {
+        try {
+            const LIMIT = 5;
+            const startIndex = (Number(req.params.page) - 1) * LIMIT; // get the starting index of every page
         
-        res.json({ 
-            data: comments, 
-            currentPage: Number(req.params.page), 
-            numberOfPages: Math.ceil(total / LIMIT)
-        });
+            const total = await Schema.countDocuments({});
+            const comments = await Schema.find().sort({ _id: 0 }).limit(LIMIT).skip(startIndex);
+    
+            messages = { 
+                data: comments, 
+                currentPage: Number(req.params.page), 
+                numberOfPages: Math.ceil(total / LIMIT)
+            }
+            
+            res.json({ 
+                data: comments, 
+                currentPage: Number(req.params.page), 
+                numberOfPages: Math.ceil(total / LIMIT)
+            });
+    
+            updateMessageList();
+        } catch (error) {    
+            res.status(500).json({ data: null, currentPage: 1, numberOfPages: 1, message: error.message });
+        }  
+    });
 
-    } catch (error) {    
-        res.status(500).json({ data: null, currentPage: 1, numberOfPages: 1, message: error.message });
-    }  
-});
+})
 
 Router.delete('/comments/:id', auth, async (req, res) => {
     const photo = await Schema.findById(req.params.id);
@@ -127,5 +150,9 @@ Router.delete('/comments/:id', auth, async (req, res) => {
         });  
     }
 });
+
+server.listen(5001, () => {
+    console.log("Websocket server is running!")
+})
 
 module.exports = Router;
