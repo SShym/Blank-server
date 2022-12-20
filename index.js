@@ -6,9 +6,9 @@ const app = express();
 const authRouter = require('./routers/authRouter');
 const commentsRouter = require('./routers/commentsRouter');
 const profileRouter = require('./routers/profileRouter');
-const http = require('http');
 const { Server } = require('socket.io');
-const Schema = require('./models/Schema')
+const Schema = require('./models/Schema');
+const userSchema = require('./models/userSchema');
 
 const PORT = process.env.PORT;
 
@@ -28,13 +28,15 @@ const server = app.listen(PORT, () =>
 );
 
 const io = new Server(server, {
-    cors: { origin: "https://suspect.netlify.app" },
+    cors: { origin: `${process.env.siteURL}` },
 });
 
 io.on('connect', (socket) => {
     let messages = {};
+    let profile = {};
     
     const updateMessageList = () => io.emit('comments', messages);
+    const updateProfile = () => io.emit('profile', profile);
 
     socket.on('comment:get', async (page) => {
         const LIMIT = 5;
@@ -50,6 +52,11 @@ io.on('connect', (socket) => {
         }
 
         updateMessageList();
+    })
+
+    socket.on('profile:get', async (id) => {
+        profile = await userSchema.findById(id);
+        updateProfile();
     })
 })
 
