@@ -18,7 +18,7 @@ const server = http.createServer(Router)
 
 const io = new Server(server, {
     cors: {
-        origin: "https://sqmr.onrender.com/",
+        origin: "https://suspect.netlify.app",
     },
 });
 
@@ -99,6 +99,11 @@ Router.put('/comments/:id', upload, auth, async (req, res) => {
             error: 'You have not verified your email'
         });  
     }
+});
+
+Router.use(function(req,res,next) {
+    req.io = io;
+    next();
 });
 
 io.on('connect', (socket) => {
