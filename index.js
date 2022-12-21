@@ -34,8 +34,10 @@ const io = new Server(server, {
 io.on('connect', (socket) => {
     let messages = {};
     let profile = {};
+    let currentPage = null
     
     const updateMessageList = () => io.emit('comments', messages);
+
     const updateProfile = () => io.emit('profile', profile);
 
     socket.on('comment:get', async (page) => {
@@ -43,12 +45,13 @@ io.on('connect', (socket) => {
         const startIndex = (Number(page) - 1) * LIMIT; // get the starting index of every page
     
         const total = await Schema.countDocuments({});
-        const comments = await Schema.find().sort({ _id: 0 }).limit(LIMIT).skip(startIndex);
+        const comments = await Schema.find()
+        // .sort({ _id: 0 }).limit(LIMIT).skip(startIndex);
 
         messages = { 
             data: comments, 
-            currentPage: Number(page), 
-            numberOfPages: Math.ceil(total / LIMIT)
+            // currentPage: Number(page), 
+            // numberOfPages: Math.ceil(total / LIMIT)
         }
 
         updateMessageList();
@@ -56,6 +59,7 @@ io.on('connect', (socket) => {
 
     socket.on('profile:get', async (id) => {
         profile = await userSchema.findById(id);
+        
         updateProfile();
     })
 })
