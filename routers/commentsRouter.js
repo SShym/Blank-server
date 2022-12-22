@@ -90,35 +90,6 @@ Router.put('/comments/:id', upload, auth, async (req, res) => {
     }
 });
 
-Router.get('/comments-length/:page', async (req, res) => {
-    try {
-        const LIMIT = 5;
-        const startIndex = (Number(req.params.page) - 1) * LIMIT; // get the starting index of every page
-    
-        const comments = await Schema.find().sort({ _id: 0 }).limit(LIMIT).skip(startIndex);
-        
-        res.json({ dataLength: comments.length });
-
-    } catch (error) {    
-        res.status(500).json({ data: null, currentPage: 1, numberOfPages: 1, message: error.message });
-    }  
-});
-
-// Router.get('/comments/:page', async (req, res) => {
-//     const page = req.params.page;
-//     try {
-//         const LIMIT = 5;
-//         const startIndex = (Number(page) - 1) * LIMIT; // get the starting index of every page
-    
-//         const total = await Schema.countDocuments({});
-//         const comments = await Schema.find().sort({ _id: 0 }).limit(LIMIT).skip(startIndex);
-
-//         res.json({ data: comments, currentPage: Number(page), numberOfPages: Math.ceil(total / LIMIT)});
-//     } catch (error) {    
-//         res.status(500).json({ data: null, currentPage: 1, numberOfPages: 1, message: error.message });
-//     }
-// });
-
 Router.delete('/comments/:id', auth, async (req, res) => {
     const photo = await Schema.findById(req.params.id);
 

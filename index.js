@@ -31,31 +31,43 @@ const io = new Server(server, {
     cors: { origin: `${process.env.siteURL}` },
 });
 
+let user = {};
+
 io.on('connect', (socket) => {
     let messages = {};
     let profile = {};
-    let currentPage = null
     
     const updateMessageList = () => io.emit('comments', messages);
 
     const updateProfile = () => io.emit('profile', profile);
 
-    socket.on('comment:get', async (page) => {
-        const LIMIT = 5;
-        const startIndex = (Number(page) - 1) * LIMIT; // get the starting index of every page
-    
-        const total = await Schema.countDocuments({});
+    socket.on('comments:get', async () => {    
         const comments = await Schema.find()
-        // .sort({ _id: 0 }).limit(LIMIT).skip(startIndex);
 
-        messages = { 
-            data: comments, 
-            // currentPage: Number(page), 
-            // numberOfPages: Math.ceil(total / LIMIT)
-        }
+        messages = { data: comments }
 
         updateMessageList();
     })
+
+    io.emit('count', user);
+
+    socket.on('login', async (data) => {
+        user[socket.id] = data.id;
+        io.emit('count', user);
+    })
+
+    socket.on('disconnectById', async (data) => {
+        Object.values(user).includes(data.id) && delete user[socket.id];
+        io.emit('count', user);
+    })
+
+    socket.on('disconnect', async () => {
+        delete user[socket.id];
+        io.emit('count', user);
+    })
+
+    // io.emit('connects', user)
+
 
     socket.on('profile:get', async (id) => {
         profile = await userSchema.findById(id);

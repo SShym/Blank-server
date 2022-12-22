@@ -15,13 +15,15 @@ Router.post('/profile', async (req, res) => {
     try {
         const containOnlyNumber = /^\d+$/.test(req.body.id);
 
-        const user = await userSchema.find(
-            containOnlyNumber ? { googleId: req.body.id }: { _id: req.body.id }
+        const user = await userSchema.find( 
+            containOnlyNumber ? { googleId: req.body.id } : { _id: req.body.id }
         );
-        
-        res.status(200).json({ userName: user[0].name, userAvatar: user[0].avatar });
-    } catch(error){
-        console.log(error)
+
+        user.length === 0 
+            ? res.status(200).json({ message: `User doesn't exist` })
+            : res.status(200).json({ userName: user[0].name, userAvatar: user[0].avatar })
+    
+        } catch(error){
         res.status(400).send({ message: 'error' });
     }
 });

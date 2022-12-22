@@ -2,11 +2,19 @@ const express = require('express');
 const Router = express();
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
+const Schema = require('../models/Schema');
 const userSchema = require('../models/userSchema');
 const tokenSchema = require('../models/tokenSchema');
+const cloudinary = require("cloudinary");
+const nodemailer = require('nodemailer');
+
+cloudinary.config({
+  cloud_name: "dotmufoiy",
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET
+});
 
 require('dotenv').config();
-const nodemailer = require('nodemailer');
 
 Router.post('/login', async (req, res) => {
     const { email, password } = req.body;
@@ -179,16 +187,53 @@ Router.get("/:id/verify/:token", async (req, res) => {
 });
 
 Router.post('/delete/:id', async (req, res) => {
+  const googleId = /^\d+$/.test(req.body.id);
 
   try{
-    const token = await tokenSchema.findOne({userId: req.body.id});
-		if (!token){
-      await userSchema.deleteOne({_id: req.body.id});
+    if(googleId){
+      await Schema.find({ creator: req.body.id}).then(product => {
+        new Promise((resolve) => {
+          for(let x in product){
+            resolve(
+              Schema.deleteMany({ creator: product[x].creator })
+            );
+          }
+        });
+      });
+      await userSchema.deleteOne({googleId: req.body.id});
       res.status(200).json({ message: 'Profile has been successfully deleted' })
     } else {
-      await token.deleteOne();
-      await userSchema.deleteOne({_id: req.body.id});
-      res.status(200).json({ message: 'Profile has been successfully deleted' })
+      const photo = await userSchema.findById(req.params.id);
+  
+      photo.avatar && cloudinary.v2.uploader.destroy(photo.avatarId);
+
+      const token = await tokenSchema.findOne({userId: req.body.id});
+      if (!token){
+        await Schema.find({ creator: req.body.id}).then(product => {
+          new Promise((resolve) => {
+            for(let x in product){
+              resolve(
+                Schema.deleteMany({ creator: product[x].creator })
+              );
+            }
+          });
+        });
+        await userSchema.deleteOne({_id: req.body.id});
+        res.status(200).json({ message: 'Profile has been successfully deleted' })
+      } else {
+        await token.deleteOne();
+        await Schema.find({ creator: req.body.id}).then(product => {
+          new Promise((resolve) => {
+            for(let x in product){
+              resolve(
+                Schema.deleteMany({ creator: product[x].creator })
+              );
+            }
+          });
+        });
+        await userSchema.deleteOne({_id: req.body.id});
+        res.status(200).json({ message: 'Profile has been successfully deleted' })
+      }
     }
   } catch(err){
     res.status(200).json({ message: 'The profile has not been deleted' })
