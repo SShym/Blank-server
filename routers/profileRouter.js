@@ -18,12 +18,12 @@ Router.post('/profile', async (req, res) => {
         const user = await userSchema.findOne( 
             containOnlyNumber ? { googleId: req.body.id } : { _id: req.body.id }
         );
-            console.log(user)
+
         user.length === 0 
             ? res.status(200).json({ message: `User doesn't exist` })
             : res.status(200).json({ 
                 userName: user.name, 
-                userAvatar: user.avatar ? user.avatar : user.imageUrl 
+                userAvatar: user.avatar
             })
     
         } catch(error){

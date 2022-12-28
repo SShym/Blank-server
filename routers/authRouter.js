@@ -142,7 +142,7 @@ Router.post('/googleAuth',  async (req, res) => {
         password: hashedPassword, 
         name,
         verified: true,
-        imageUrl: imageUrl
+        avatar: imageUrl
       });
 
       res.status(201).json({ result, token: req.body.token });
@@ -168,7 +168,6 @@ Router.post('/account', async (req, res) => {
 Router.get("/:id/verify/:token", async (req, res) => {
   try {
 		const user = await userSchema.findOne({ _id: req.params.id });
-    console.log(user)
     if (!user) return res.status(400).send({ message: "Invalid user" });
     
 		const token = await tokenSchema.findOne({

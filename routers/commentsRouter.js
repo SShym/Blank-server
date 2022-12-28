@@ -55,24 +55,19 @@ Router.post('/comments', upload, auth, async (req, res) => {
 
 Router.post('/delete-direct-chat/:room', async (req, res) => {
     try{
-        if(req.verified){
-            await SchemaDirect.find({ to: req.params.room }).then(comment => {
-                new Promise((resolve) => {
-                  for(let x in comment){
-                    resolve(
-                        SchemaDirect.deleteMany({ to: comment[x].to })
-                    );
-                  }
-                });
-            });
+        await SchemaDirect.find({ to: req.params.room }).then(comment => {
+            new Promise((resolve) => {
+                for(let x in comment){
+                comment[x].photoId && cloudinary.v2.uploader.destroy(comment[x].photoId),
 
-            res.status(200).json({ message: 'Success' }); 
-        } else {
-            res.status(500).send({ 
-                error: 'You have not verified your email'
-            }); 
-        }
+                resolve(SchemaDirect.deleteMany({ to: comment[x].to }));
+                }
+            });
+        });
+
+        res.status(200).json({ message: 'Success' }); 
     } catch(err) {
+        console.log(err)
         res.status(500).send({ 
             error: 'Something went wrong'
         }); 
