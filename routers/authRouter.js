@@ -17,26 +17,26 @@ cloudinary.config({
 require('dotenv').config();
 
 Router.post('/login', async (req, res) => {
-    const { email, password } = req.body;
-  
-    try {
-      const oldUser = await userSchema.findOne({ email });
+  const { email, password } = req.body;
 
-      if (!oldUser) return res.status(404).json({ message: "User doesn't exist" });
-      
-      const isPasswordCorrect = await bcrypt.compare(password, oldUser.password);
-      
-      if (!isPasswordCorrect && !(password == oldUser.password)){
-        return res.status(400).json({ message: "Invalid credentials" });
-      }
+  try {
+    const oldUser = await userSchema.findOne({ email });
 
-      const token = jwt.sign({ email: oldUser.email, id: oldUser._id }, 'test', {});
-      
-      res.status(200).json({ result: oldUser, token });
-    } catch (error) {
-      res.status(500).json({ message: "Something went wrong" });
-      console.log(error)
+    if (!oldUser) return res.status(404).json({ message: "User doesn't exist" });
+    
+    const isPasswordCorrect = await bcrypt.compare(password, oldUser.password);
+    
+    if (!isPasswordCorrect && !(password == oldUser.password)){
+      return res.status(400).json({ message: "Invalid credentials" });
     }
+
+    const token = jwt.sign({ email: oldUser.email, id: oldUser._id }, 'test', {});
+    
+    res.status(200).json({ result: oldUser, token });
+  } catch (error) {
+    res.status(500).json({ message: "Something went wrong" });
+    console.log(error)
+  }
 });
 
 const verification = async (email, link, firstName) => {
@@ -92,63 +92,65 @@ Router.post('/resend-verification',  async (req, res) => {
 })
 
 Router.post('/register',  async (req, res) => {
-    const { email, password, firstName, lastName } = req.body;
-  
-    try {
-      const oldUser = await userSchema.findOne({ email });
-  
-      if (oldUser){
-        return res.status(400).json({ message: "User already exists" });
-      }
+  const { email, password, firstName, lastName } = req.body;
 
-      const hashedPassword = await bcrypt.hash(password, 12);
+  try {
+    const oldUser = await userSchema.findOne({ email });
 
-      const result = await userSchema.create({ 
-        email, 
-        password: hashedPassword, 
-        name: `${firstName} ${lastName}` 
-      });
-
-      const tokenS = await new tokenSchema({
-        userId: result._id,
-        token: jwt.sign({}, 'token'),
-      }).save();
-      
-      const link = `${process.env.siteURL}/${tokenS.userId}/verify/${tokenS.token}`;
-
-      await verification(email, link, firstName);
-
-      res.status(201).json({ notification: 'Email sent Successfully' })
-    } catch (error) {
-      res.status(500).json({ message: "Something went wrong" });
-      console.log(error);
+    if (oldUser){
+      return res.status(400).json({ message: "User already exists" });
     }
+
+    const hashedPassword = await bcrypt.hash(password, 12);
+
+    const result = await userSchema.create({ 
+      email, 
+      password: hashedPassword, 
+      name: `${firstName} ${lastName}` 
+    });
+
+    const tokenS = await new tokenSchema({
+      userId: result._id,
+      token: jwt.sign({}, 'token'),
+    }).save();
+    
+    const link = `${process.env.siteURL}/${tokenS.userId}/verify/${tokenS.token}`;
+
+    await verification(email, link, firstName);
+
+    res.status(201).json({ notification: 'Email sent Successfully' })
+  } catch (error) {
+    res.status(500).json({ message: "Something went wrong" });
+    console.log(error);
+  }
 });
 
 Router.post('/googleAuth',  async (req, res) => {
-    const { email, googleId, imageUrl, name } = req.body.result;
+  const { email, googleId, imageUrl, name } = req.body.result;
 
-    try {
-      const oldUser = await userSchema.findOne({ googleId });
-  
-      if (oldUser){
-        res.status(200).json({ result: oldUser, token: req.body.token });
-      } else {
-        const result = await userSchema.create({ 
-          googleId,
-          email:`google-mail=${email}`,
-          password: 'google', 
-          name,
-          verified: true,
-          avatar: imageUrl
-        });
-  
-        res.status(201).json({ oldUser });
-      }
-    } catch (error) {
-      res.status(500).json({ message: "Something went wrong" });
-      console.log(error);
+  try {
+    const oldUser = await userSchema.findOne({ googleId });
+
+    const hashedPassword = await bcrypt.hash('Random Google-Password...', 12);
+
+    if (oldUser){
+      res.status(200).json({ result: oldUser, token: req.body.token });
+    } else {
+      const result = await userSchema.create({ 
+        googleId,
+        email:`gmail: ${email}`,
+        password: hashedPassword, 
+        name,
+        verified: true,
+        imageUrl: imageUrl
+      });
+
+      res.status(201).json({ result, token: req.body.token });
     }
+  } catch (error) {
+    res.status(500).json({ message: "Something went wrong" });
+    console.log(error);
+  }
 });
 
 Router.post('/account', async (req, res) => {
