@@ -17,7 +17,7 @@ Router.post('/comments', upload, auth, async (req, res) => {
         try {
             if(req.file){
                 cloudinary.v2.uploader.upload(req.file.path, (err, result) => {  
-                    if (err) req.json(err.message);  
+                    if (err) res.json(err.message);  
             
                     Schema.create({ 
                         ...req.body, 
@@ -58,9 +58,8 @@ Router.post('/delete-direct-chat/:room', async (req, res) => {
         await SchemaDirect.find({ to: req.params.room }).then(comment => {
             new Promise((resolve) => {
                 for(let x in comment){
-                comment[x].photoId && cloudinary.v2.uploader.destroy(comment[x].photoId),
-
-                resolve(SchemaDirect.deleteMany({ to: comment[x].to }));
+                    comment[x].photoId && cloudinary.v2.uploader.destroy(comment[x].photoId),
+                    resolve(SchemaDirect.deleteMany({ to: comment[x].to }));
                 }
             });
         });
@@ -92,7 +91,11 @@ Router.post('/commentsDirect/:room', upload, auth, async (req, res) => {
                         timeCreate: timeCreate,
                         changed: changed,
                         name: name,
-                        to: req.params.room
+                        to: req.params.room,
+                        photoSize: {
+                            width: req.body.photoSize.width,
+                            height: req.body.photoSize.height
+                        },
                     }).then(createdProduct => {
                         res.json(createdProduct);
                     })
@@ -131,7 +134,7 @@ Router.put('/comments/:id', upload, auth, async (req, res) => {
                 photo.photoId && cloudinary.v2.uploader.destroy(photo.photoId);
 
                 cloudinary.v2.uploader.upload(req.file.path, (err, result) => {  
-                    if (err) req.json(err.message);  
+                    if (err) res.json(err.message);  
             
                     Schema.updateOne({_id: req.params.id}, {
                         ...req.body,

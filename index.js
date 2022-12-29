@@ -1,3 +1,4 @@
+const { Server } = require('socket.io');
 const cors = require("cors");
 const express = require('express');
 const bodyParser = require('body-parser');
@@ -6,10 +7,6 @@ const app = express();
 const authRouter = require('./routers/authRouter');
 const commentsRouter = require('./routers/commentsRouter');
 const profileRouter = require('./routers/profileRouter');
-const { Server } = require('socket.io');
-const Schema = require('./models/Schema');
-const SchemaDirect = require('./models/SchemaDirect');
-const userSchema = require('./models/userSchema');
 
 const PORT = process.env.PORT;
 
@@ -24,97 +21,13 @@ app.use(express.urlencoded({limit: '25mb', extended: true}));
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.json()).use(bodyParser.json());
 
-const server = app.listen(PORT, () =>
-  console.log(`Server started on ${PORT}`)
-);
+const server = app.listen(PORT, () => console.log(`Server started on ${PORT}`));
 
 const io = new Server(server, {
     cors: { origin: `${process.env.siteURL}` },
 });
 
-let users = [];
-
-io.on('connect', (socket) => {
-    let messages = {};
-    let profile = {};
-    
-    ////////////////////////////////////////////////
-
-    const updateMessageList = () => io.emit('comments', messages);
-    const updateProfile = () => io.to(socket.id).emit('profile', profile);
-
-    socket.on('comments:get', async () => {    
-        const comments = await Schema.find()
-        messages = { data: comments }
-        updateMessageList();
-    })
-    
-    socket.on('profile:get', async (id) => {
-        profile = await userSchema.findById(id);
-        updateProfile();
-    })
-
-    //////////////////////////////////////////////////////
-
-    const getLastMessagesFromRoom = async (room) => {
-        let roomMessages = await SchemaDirect.find({
-            to: room,
-        });
-    
-        return roomMessages;
-    }
-    
-    socket.on('join-room', async(room) => {
-        socket.join(room);
-
-        let roomMessages = await getLastMessagesFromRoom(room);
-        socket.emit('direct-comments', roomMessages)
-    })
-
-    socket.on('leave-room', async (room) => {
-        socket.leave(room);
-
-        let roomMessages = await getLastMessagesFromRoom(room);
-        socket.emit('direct-comments', roomMessages);
-    })
-
-    socket.on('add-direct-comment', async(data) => {
-        let roomMessages = await getLastMessagesFromRoom(data.to);
-
-        io.to(data.to).emit('direct-comments', roomMessages);
-    })
-
-    socket.on('delete-direct-chat', async(room) => {
-        io.to(room).emit('direct-comments', []);
-    })
-
-    /////////////////////////////////////////////////////
-
-    socket.on('login', async (data) => {
-        if(!users.some(user => user.userId === data.id)){
-            users.push({
-                userId: data.id,
-                socketId: socket.id
-            })
-        }
-
-        io.emit('countUsers', users);
-    })
-
-    socket.on('disconnectById', async (data) => {
-        users = users.filter((user) => user.socketId !== socket.id);
-
-        io.emit('countUsers', users);
-    })
-
-    socket.on('disconnect', async () => {
-        users = users.filter((user) => user.socketId !== socket.id);
-
-        io.emit('countUsers', users);
-    })
-
-    //////////////////////////////////
-})
+require('./socket')(io)
 
 app.use(authRouter);
 app.use(commentsRouter);

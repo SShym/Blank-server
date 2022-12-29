@@ -10,6 +10,10 @@ const SchemaDirect = mongoose.Schema({
     changed: Boolean,
     photo: String,
     photoId: String,
+    photoSize: {
+        width: String,
+        height: String
+    },
 })
 
 module.exports = mongoose.model('commentsDirect', SchemaDirect)

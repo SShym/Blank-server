@@ -17,16 +17,16 @@ cloudinary.config({
 require('dotenv').config();
 
 Router.post('/login', async (req, res) => {
-  const { email, password } = req.body;
+  const { email, password, passwordVerify } = req.body;
 
   try {
     const oldUser = await userSchema.findOne({ email });
 
     if (!oldUser) return res.status(404).json({ message: "User doesn't exist" });
     
-    const isPasswordCorrect = await bcrypt.compare(password, oldUser.password);
+    const isPasswordCorrect = await bcrypt.compare((password || passwordVerify), oldUser.password);
     
-    if (!isPasswordCorrect && !(password == oldUser.password)){
+    if (!isPasswordCorrect && !(passwordVerify == oldUser.password)){
       return res.status(400).json({ message: "Invalid credentials" });
     }
 

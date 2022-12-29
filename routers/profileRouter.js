@@ -11,24 +11,18 @@ cloudinary.config({
   api_secret: process.env.CLOUDINARY_API_SECRET
 });
 
-Router.post('/profile', async (req, res) => {
+Router.get('/profile/:id', async (req, res) => {
     try {
-        const containOnlyNumber = /^\d+$/.test(req.body.id);
+        const containOnlyNumber = /^\d+$/.test(req.params.id);
 
         const user = await userSchema.findOne( 
-            containOnlyNumber ? { googleId: req.body.id } : { _id: req.body.id }
+            containOnlyNumber ? { googleId: req.params.id } : { _id: req.params.id }
         );
 
-        user.length === 0 
-            ? res.status(200).json({ message: `User doesn't exist` })
-            : res.status(200).json({ 
-                userName: user.name, 
-                userAvatar: user.avatar
-            })
-    
-        } catch(error){
-        res.status(400).send({ message: 'error' });
-    }
+        res.status(200).json({ userName: user.name, userAvatar: user.avatar })
+        } catch(error) {
+            res.status(400).send({ message: `User doesn't exist` });
+        }
 });
 
 Router.put('/change-settings', upload, async (req, res) => {
