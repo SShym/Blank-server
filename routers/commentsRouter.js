@@ -41,15 +41,10 @@ Router.post('/comments', upload, auth, async (req, res) => {
                 }).then(createdProduct => res.json(createdProduct))
             }
         } catch(error){
-            res.status(400).send({ 
-                error: 'Error while uploading file try again later'
-            });
-            console.log(error)
+            res.status(400).send({ error: 'Error while uploading file try again later' });
         }
     } else {
-        res.status(500).send({ 
-            error: 'You have not verified your email'
-        });  
+        res.status(500).send({ error: 'You have not verified your email' });  
     }
 });
 
@@ -66,10 +61,7 @@ Router.post('/delete-direct-chat/:room', async (req, res) => {
 
         res.status(200).json({ message: 'Success' }); 
     } catch(err) {
-        console.log(err)
-        res.status(500).send({ 
-            error: 'Something went wrong'
-        }); 
+        res.status(500).send({ error: 'Something went wrong' }); 
     }
 })
 
@@ -114,20 +106,16 @@ Router.post('/commentsDirect/:room', upload, auth, async (req, res) => {
                 })
             }
         } catch(error){
-            res.status(400).send({ 
-                error: 'Error while uploading file try again later'
-            });
-            console.log(error)
+            res.status(400).send({ error: 'Error while uploading file try again later' });
         }
     } else {
-        res.status(500).send({ 
-            error: 'You have not verified your email'
-        });  
+        res.status(500).send({ error: 'You have not verified your email' });  
     }
 });
 
 Router.put('/comments/:id', upload, auth, async (req, res) => { 
     const photo = await Schema.findById(req.params.id);
+
     if(req.verified){
         try {
             if(req.file){
@@ -152,15 +140,10 @@ Router.put('/comments/:id', upload, auth, async (req, res) => {
                 })
             }
         } catch(error){
-            console.log(error)
-            res.status(400).send({
-                error: 'Error while uploading file try again later'
-            });
+            res.status(400).send({ error: 'Error while uploading file try again later' });
         }
     } else {
-        res.status(500).send({ 
-            error: 'You have not verified your email'
-        });  
+        res.status(500).send({ error: 'You have not verified your email' });  
     }
 });
 
@@ -175,9 +158,7 @@ Router.delete('/comments/:id', auth, async (req, res) => {
         })
         .catch(err => res.status(500).json(err))
     } else {
-        res.status(500).send({ 
-            error: 'You have not verified your email'
-        });  
+        res.status(500).send({ error: 'You have not verified your email' });  
     }
 });
 

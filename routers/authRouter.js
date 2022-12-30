@@ -109,10 +109,10 @@ Router.post('/register',  async (req, res) => {
       name: `${firstName} ${lastName}` 
     });
 
-    const tokenS = await new tokenSchema({
+    const tokenS = await tokenSchema.create({
       userId: result._id,
       token: jwt.sign({}, 'token'),
-    }).save();
+    });
     
     const link = `${process.env.siteURL}/${tokenS.userId}/verify/${tokenS.token}`;
 
@@ -121,7 +121,6 @@ Router.post('/register',  async (req, res) => {
     res.status(201).json({ notification: 'Email sent Successfully' })
   } catch (error) {
     res.status(500).json({ message: "Something went wrong" });
-    console.log(error);
   }
 });
 
@@ -149,7 +148,6 @@ Router.post('/googleAuth',  async (req, res) => {
     }
   } catch (error) {
     res.status(500).json({ message: "Something went wrong" });
-    console.log(error);
   }
 });
 
@@ -157,10 +155,8 @@ Router.post('/account', async (req, res) => {
   try {
     const { id, token } = req.body
     const user = await userSchema.findOne({ _id: id });
-  
-    res.status(201).json({ result: user, token })
+    res.status(201).json({ result: user, token });
   } catch (error) {
-    console.log(error)
     res.status(500).json({ message: "Something went wrong" });
   }
 });
