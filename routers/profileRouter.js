@@ -2,6 +2,8 @@ const express = require('express');
 const Router = express();
 const Schema = require('../models/Schema');
 const userSchema = require('../models/userSchema');
+const tokenSchema = require('../models/tokenSchema');
+const SchemaDirect = require('../models/SchemaDirect');
 const upload = require('../middleware/imgUpload');
 const cloudinary = require("cloudinary");
 
@@ -20,6 +22,25 @@ Router.get('/profile/:id', async (req, res) => {
         );
 
         res.status(200).json({ userName: user.name, userAvatar: user.avatar })
+        } catch(error) {
+            res.status(400).send({ message: `User doesn't exist` });
+        }
+});
+
+Router.get('/all-profiles', async (req, res) => {
+    try {
+        const profiles = await userSchema.find();
+
+        const data = profiles.map(profile => {
+            return {
+                name: profile.name,
+                email: profile.email,
+                avatar: profile.avatar,
+                id: profile.googleId ? profile.googleId : profile._id
+            }
+        })
+
+        res.status(200).json(data)
         } catch(error) {
             res.status(400).send({ message: `User doesn't exist` });
         }
@@ -116,9 +137,63 @@ Router.put('/change-settings', upload, async (req, res) => {
             })
         }
     } catch (error) {
-      console.log(error)
       res.status(500).json({ message: "Something went wrong" });
     }
 });
+
+Router.post('/delete/:id', async (req, res) => {
+    const googleId = /^\d+$/.test(req.body.id);
+  
+    try{
+      if(googleId){
+        await Schema.find({ creator: req.body.id}).then(product => {
+          new Promise((resolve) => {
+            for(let x in product){
+              resolve(
+                Schema.deleteMany({ creator: product[x].creator })
+              );
+            }
+          });
+        });
+        await userSchema.deleteOne({googleId: req.body.id});
+        res.status(200).json({ message: 'Profile has been successfully deleted' })
+      } else {
+        const photo = await userSchema.findById(req.params.id);
+    
+        photo.avatar && cloudinary.v2.uploader.destroy(photo.avatarId);
+  
+        const token = await tokenSchema.findOne({userId: req.body.id});
+
+        if (!token){
+          await Schema.find({ creator: req.body.id}).then(product => {
+            new Promise((resolve) => {
+              for(let x in product){
+                resolve(
+                  Schema.deleteMany({ creator: product[x].creator })
+                );
+              }
+            });
+          });
+          await userSchema.deleteOne({_id: req.body.id});
+          res.status(200).json({ message: 'Profile has been successfully deleted' })
+        } else {
+          await token.deleteOne();
+          await Schema.find({ creator: req.body.id}).then(product => {
+            new Promise((resolve) => {
+              for(let x in product){
+                resolve(
+                  Schema.deleteMany({ creator: product[x].creator })
+                );
+              }
+            });
+          });
+          await userSchema.deleteOne({_id: req.body.id});
+          res.status(200).json({ message: 'Profile has been successfully deleted' })
+        }
+      }
+    } catch(err){
+        res.status(200).json({ message: 'The profile has not been deleted' })
+    }
+  })
 
 module.exports = Router;

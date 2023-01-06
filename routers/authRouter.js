@@ -35,7 +35,6 @@ Router.post('/login', async (req, res) => {
     res.status(200).json({ result: oldUser, token });
   } catch (error) {
     res.status(500).json({ message: "Something went wrong" });
-    console.log(error)
   }
 });
 
@@ -87,7 +86,6 @@ Router.post('/resend-verification',  async (req, res) => {
 		}
 	} catch (error) {
 		res.status(500).send({ message: "Internal Server Error" });
-    console.log(error)
 	}
 })
 
@@ -182,59 +180,5 @@ Router.get("/:id/verify/:token", async (req, res) => {
 		res.status(500).send({ message: "Internal Server Error" });
 	}
 });
-
-Router.post('/delete/:id', async (req, res) => {
-  const googleId = /^\d+$/.test(req.body.id);
-
-  try{
-    if(googleId){
-      await Schema.find({ creator: req.body.id}).then(product => {
-        new Promise((resolve) => {
-          for(let x in product){
-            resolve(
-              Schema.deleteMany({ creator: product[x].creator })
-            );
-          }
-        });
-      });
-      await userSchema.deleteOne({googleId: req.body.id});
-      res.status(200).json({ message: 'Profile has been successfully deleted' })
-    } else {
-      const photo = await userSchema.findById(req.params.id);
-  
-      photo.avatar && cloudinary.v2.uploader.destroy(photo.avatarId);
-
-      const token = await tokenSchema.findOne({userId: req.body.id});
-      if (!token){
-        await Schema.find({ creator: req.body.id}).then(product => {
-          new Promise((resolve) => {
-            for(let x in product){
-              resolve(
-                Schema.deleteMany({ creator: product[x].creator })
-              );
-            }
-          });
-        });
-        await userSchema.deleteOne({_id: req.body.id});
-        res.status(200).json({ message: 'Profile has been successfully deleted' })
-      } else {
-        await token.deleteOne();
-        await Schema.find({ creator: req.body.id}).then(product => {
-          new Promise((resolve) => {
-            for(let x in product){
-              resolve(
-                Schema.deleteMany({ creator: product[x].creator })
-              );
-            }
-          });
-        });
-        await userSchema.deleteOne({_id: req.body.id});
-        res.status(200).json({ message: 'Profile has been successfully deleted' })
-      }
-    }
-  } catch(err){
-    res.status(200).json({ message: 'The profile has not been deleted' })
-  }
-})
 
 module.exports = Router;

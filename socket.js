@@ -32,7 +32,7 @@ io.on('connect', (socket) => {
         let roomMessages = await SchemaDirect.find({
             to: room,
         });
-    
+
         return roomMessages;
     }
     
