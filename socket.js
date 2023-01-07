@@ -16,8 +16,12 @@ io.on('connect', (socket) => {
     const updateProfile = () => io.to(socket.id).emit('profile', profile);
 
     socket.on('comments:get', async () => {    
-        const comments = await Schema.find()
-        messages = { data: comments }
+        const comments = await Schema.find();
+
+        messages = { 
+            data: comments 
+        }
+        
         updateMessageList();
     })
     

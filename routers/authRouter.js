@@ -2,7 +2,6 @@ const express = require('express');
 const Router = express();
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
-const Schema = require('../models/Schema');
 const userSchema = require('../models/userSchema');
 const tokenSchema = require('../models/tokenSchema');
 const cloudinary = require("cloudinary");
